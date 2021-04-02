@@ -21,7 +21,7 @@ You don't need to manually update on future releases.
 // ==/UserScript==
 
 (async () => {
-  const youtubePlus = await fetch("https://youtube-plus.italodeandra.de/static/js/youtube-plus.js").then(res => res.text());
+  const youtubePlus = await fetch("https://youtube-plus.italodeandra.de/youtube-plus.js").then(res => res.text());
   eval(youtubePlus)
 })()
 ```
