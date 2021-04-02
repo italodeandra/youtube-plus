@@ -4,7 +4,7 @@
 
 <code>youtube-plus.js</code> improves YouTube's tracking of watched videos
 
-[![Build Status](https://img.shields.io/github/workflow/status/italodeandra/youtube-plus/Lint?style=flat&colorA=000000&colorB=000000)](https://github.com/italodeandra/youtube-plus/actions?query=workflow%3ALint)
+![GitHub branch checks state](https://img.shields.io/github/checks-status/italodeandra/youtube-plus/main?style=flat&colorA=000000)
 [![Version](https://img.shields.io/github/package-json/v/italodeandra/youtube-plus?style=flat&colorA=000000&colorB=000000)](https://github.com/italodeandra/youtube-plus/releases)
 
 #### Add the following script to any browser script addon
