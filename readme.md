@@ -7,9 +7,15 @@
 ![GitHub branch checks state](https://img.shields.io/github/checks-status/italodeandra/youtube-plus/main?style=flat&colorA=000000)
 [![Version](https://img.shields.io/github/package-json/v/italodeandra/youtube-plus?style=flat&colorA=000000&colorB=000000)](https://github.com/italodeandra/youtube-plus/releases)
 
-#### Add the following script to any browser UserScript extension
+#### You can
 
-You don't need to manually update on future releases.
+- Mark video as watched
+- Hide watched videos
+- Cloud sync your list
+
+#### To use it
+
+Add the following script to any browser UserScript extension.
 
 ```js
 // ==UserScript==
@@ -25,3 +31,5 @@ You don't need to manually update on future releases.
   eval(youtubePlus)
 })()
 ```
+
+You don't need to manually update on future releases.
