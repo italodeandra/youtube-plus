@@ -1,8 +1,9 @@
 import WatchedVideo, { IWatchedVideoReqQuery } from "../../models/WatchedVideo"
 import { NextApiHandler } from "next"
-import { connectDb, runMiddleware } from "../../middlewares"
+import { connectDb, cors, runMiddleware } from "../../middlewares"
 
 const listWatchedVideos: NextApiHandler = async (req, res) => {
+  await runMiddleware(req, res, cors)
   await runMiddleware(req, res, connectDb)
 
   const userId = req.query.userId as IWatchedVideoReqQuery["userId"]
