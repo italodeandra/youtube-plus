@@ -13,7 +13,9 @@
 - Hide watched videos
 - Cloud sync your list
 
-#### To use it
+[Wiki](https://github.com/italodeandra/youtube-plus/wiki)
+
+#### Start using it
 
 Add the following script to any browser UserScript extension.
 
