@@ -23,6 +23,7 @@
     "mongodb-memory-server": "^6.9.6",
     "mongoose": "^5.12.3",
     "next": "10.1.2",
+    "notistack": "^1.0.6-alpha.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-library": "git+https://majapi-meerkat:dLA1JDGcmtmS_CMp4fxB@gitlab.com/italodeandra/react-library.git",
