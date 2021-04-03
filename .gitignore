@@ -2,8 +2,6 @@
 
 # dependencies
 /node_modules
-.yarn/unplugged
-.yarn/build-state.yml
 yalc.lock
 .yalc
 
@@ -21,6 +19,7 @@ public/youtube-plus.js
 # misc
 .DS_Store
 *.pem
+.eslintcache
 
 # debug
 npm-debug.log*
