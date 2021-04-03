@@ -12,7 +12,6 @@ import {
   SvgIcon,
   Typography,
 } from "@material-ui/core"
-import { Icon } from "@iconify/react"
 import eyeIcon from "@iconify/icons-heroicons-outline/eye"
 import eyeOffIcon from "@iconify/icons-heroicons-outline/eye-off"
 import checkIcon from "@iconify/icons-heroicons-outline/check"
@@ -29,6 +28,7 @@ import useRemoveWatchedVideo from "../apiHooks/useRemoveWatchedVideo"
 import { useProxy } from "valtio/macro"
 import state from "../state"
 import { IWatchedVideoReqBody } from "../models/WatchedVideo"
+import Icon from "@iconify/react"
 
 const HomeWithProviders = () => {
   useProxy(state)
