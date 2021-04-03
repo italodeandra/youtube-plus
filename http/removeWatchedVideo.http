@@ -1,0 +1,10 @@
+# add watched video
+POST {{baseUrl}}/removeWatchedVideo
+Content-Type: application/json
+
+{
+    "userId": "userId-1",
+    "videoId": "videoId-1"
+}
+
+###

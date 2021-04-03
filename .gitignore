@@ -4,6 +4,8 @@
 /node_modules
 /.pnp
 .pnp.js
+yalc.lock
+.yalc
 
 # testing
 /coverage
@@ -14,7 +16,7 @@
 
 # production
 /build
-public/betina.js
+public/youtube-plus.js
 
 # misc
 .DS_Store

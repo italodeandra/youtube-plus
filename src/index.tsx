@@ -1,13 +1,14 @@
 import React from "react"
 import ReactDOM from "react-dom"
 
-import Index from "./pages/index"
+import Index from "./pages"
+import log from "./log"
 
 const youtubePlusRoot = document.createElement("div")
 youtubePlusRoot.id = "youtube-plus-root"
 document.body.appendChild(youtubePlusRoot)
 
-console.log("Olá, cheguei.")
+log("Hello, I'm here.")
 
 ReactDOM.render(
   <React.StrictMode>
