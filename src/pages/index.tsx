@@ -25,13 +25,14 @@ import useListWatchedVideos from "../apiHooks/useListWatchedVideo"
 import useAddWatchedVideo from "../apiHooks/useAddWatchedVideo"
 import { useMemo, VFC } from "react"
 import useRemoveWatchedVideo from "../apiHooks/useRemoveWatchedVideo"
-import { useProxy } from "valtio/macro"
 import state from "../state"
 import { IWatchedVideoReqBody } from "../models/WatchedVideo"
 import Icon from "@iconify/react"
+import { useSnapshot } from "valtio"
 
 const HomeWithProviders = () => {
-  useProxy(state)
+  const snap = useSnapshot(state)
+
   const {
     data: currentProfileId,
     isLoading: isLoadingCurrentProfileId,
@@ -97,20 +98,20 @@ const HomeWithProviders = () => {
         key: 1,
         icon: (
           <SvgIcon>
-            <Icon icon={state.isWatchedHidden ? eyeIcon : eyeOffIcon} />
+            <Icon icon={snap.isWatchedHidden ? eyeIcon : eyeOffIcon} />
           </SvgIcon>
         ),
         tooltipTitle: (
           <Typography noWrap fontSize={16}>
-            {state.isWatchedHidden ? "Show" : "Hide"} watched
+            {snap.isWatchedHidden ? "Show" : "Hide"} watched
           </Typography>
         ),
-        onClick: () => (state.isWatchedHidden = !state.isWatchedHidden),
+        onClick: () => (state.isWatchedHidden = !snap.isWatchedHidden),
       })
     }
     return innerActions
   }, [
-    state.isWatchedHidden,
+    snap.isWatchedHidden,
     isLoading,
     isWatched,
     currentProfileId,
@@ -168,7 +169,7 @@ const ContextMenu: VFC<{
   removeWatchedVideo,
   watchedVideos,
 }) => {
-  useProxy(state)
+  const snap = useSnapshot(state)
 
   const handleClose = () => {
     state.contextMenu = null
@@ -177,25 +178,25 @@ const ContextMenu: VFC<{
   const isWatched = useMemo(
     () =>
       !!watchedVideos &&
-      !!state.contextMenu?.videoId &&
-      watchedVideos?.includes(state.contextMenu?.videoId),
-    [watchedVideos, state.contextMenu?.videoId]
+      !!snap.contextMenu?.videoId &&
+      watchedVideos?.includes(snap.contextMenu?.videoId),
+    [watchedVideos, snap.contextMenu?.videoId]
   )
 
   return currentProfileId ? (
     <Menu
-      open={state.contextMenu !== null}
+      open={snap.contextMenu !== null}
       onClose={handleClose}
       anchorReference="anchorPosition"
       anchorPosition={
-        state.contextMenu !== null
-          ? { top: state.contextMenu.mouseY, left: state.contextMenu.mouseX }
+        snap.contextMenu !== null
+          ? { top: snap.contextMenu.mouseY, left: snap.contextMenu.mouseX }
           : { top: 0, left: 0 }
       }
       MenuListProps={{
         subheader: (
           <ListSubheader sx={{ fontSize: 14 }}>
-            {state.contextMenu?.videoId}
+            {snap.contextMenu?.videoId}
           </ListSubheader>
         ),
       }}
@@ -203,16 +204,16 @@ const ContextMenu: VFC<{
       <MenuItem
         sx={{ fontSize: 16 }}
         onClick={() => {
-          if (state.contextMenu?.videoId) {
+          if (snap.contextMenu?.videoId) {
             if (!isWatched) {
               addWatchedVideo({
                 userId: currentProfileId,
-                videoId: state.contextMenu.videoId,
+                videoId: snap.contextMenu.videoId,
               })
             } else {
               removeWatchedVideo({
                 userId: currentProfileId,
-                videoId: state.contextMenu.videoId,
+                videoId: snap.contextMenu.videoId,
               })
             }
             handleClose()

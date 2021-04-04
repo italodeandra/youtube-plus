@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 import log from "./log"
 import config from "./config"
 import state from "./state"
-import { useProxy } from "valtio/macro"
 import { useFirstMountState } from "react-use"
+import { useSnapshot } from "valtio"
 
 class YouTubeCrawler {
   get currentVideoId() {
@@ -46,10 +46,10 @@ class YouTubeCrawler {
           state.contextMenu =
             state.contextMenu === null
               ? {
-                mouseX: event.clientX - 2,
-                mouseY: event.clientY - 4,
-                videoId,
-              }
+                  mouseX: event.clientX - 2,
+                  mouseY: event.clientY - 4,
+                  videoId,
+                }
               : null
         }
       })
@@ -115,7 +115,8 @@ export default function useBet365Crawler(
   profileId?: string,
   watchedVideos?: string[]
 ) {
-  useProxy(state)
+  const snap = useSnapshot(state)
+
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null)
 
   const isFirstMount = useFirstMountState()
@@ -139,7 +140,7 @@ export default function useBet365Crawler(
 
       return () => clearInterval(interval)
     }
-  }, [profileId, watchedVideos, state.isWatchedHidden])
+  }, [profileId, watchedVideos, snap.isWatchedHidden])
 
   return [currentVideoId]
 }
