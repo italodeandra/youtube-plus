@@ -1,4 +1,4 @@
-<img src="logo.svg" alt="YouTube">
+<img src="hero.svg" alt="YouTube">
 <br />
 <br />
 
@@ -28,8 +28,10 @@ Add the following script to any browser UserScript extension.
 // @version        latest
 // ==/UserScript==
 
-(async () => {
-  const youtubePlus = await fetch("https://youtube-plus.italodeandra.de/youtube-plus.js").then(res => res.text());
+;(async () => {
+  const youtubePlus = await fetch(
+    "https://youtube-plus.italodeandra.de/youtube-plus.js"
+  ).then((res) => res.text())
   eval(youtubePlus)
 })()
 ```
