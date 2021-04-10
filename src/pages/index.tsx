@@ -137,7 +137,12 @@ const HomeWithProviders = () => {
         }
         hidden={!!error || isFullscreen}
         FabProps={{
-          onClick: actions[0]?.onClick,
+          onClick: (e) => {
+            e.currentTarget.blur()
+            if (actions[0]) {
+              actions[0].onClick()
+            }
+          },
         }}
       >
         {actions.map((action) => (
