@@ -24,7 +24,7 @@ Add the following script to any browser UserScript extension.
 // @name           YouTube Plus
 // @description    Improve YouTube's tracking of watched videos
 // @author         Ítalo Andrade
-// @include        *youtube.com/*
+// @include        *www.youtube.com/*
 // @version        latest
 // ==/UserScript==
 
