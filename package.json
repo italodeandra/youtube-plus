@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "npm run build:script && next build",
-    "start": "next start",
+    "start": "next start -p $PORT",
     "test": "jest",
     "build:script": "craco build && copyfiles build/static/js/youtube-plus.js public -f",
     "dev:script": "craco start",
