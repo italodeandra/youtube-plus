@@ -1,5 +1,5 @@
 import "@fontsource/inter/variable-full.css"
-import { createTheme } from "react-library"
+import createTheme from "@italodeandra/pijama/styles/createTheme"
 
 const theme = createTheme({
   palette: {
@@ -11,11 +11,11 @@ const theme = createTheme({
     MuiSvgIcon: {
       styleOverrides: {
         root: {
-          fontSize: 1.5 * 16
-        }
-      }
-    }
-  }
+          fontSize: 1.5 * 16,
+        },
+      },
+    },
+  },
 })
 
 export default theme

@@ -1,16 +1,15 @@
 import { useQuery } from "react-query"
-import { notify } from "react-library"
+import { notify } from "@italodeandra/pijama/components/Snackbar/snackbarState"
 import queryClient from "../queryClient"
 
 const queryKeyCurrentProfileId = `youtube-current-profile-id`
-const queryFnCurrentProfileId = () => fetch("https://www.youtube.com/profile").then(
-  (res) => {
+const queryFnCurrentProfileId = () =>
+  fetch("https://www.youtube.com/profile").then((res) => {
     if (!res.url.startsWith("https://www.youtube.com/channel/")) {
       throw Error("Can't get the ID")
     }
     return res.url.replace("https://www.youtube.com/channel/", "")
-  }
-)
+  })
 
 export const getCurrentProfileId = () =>
   queryClient.getQueryData<Error>(queryKeyCurrentProfileId)

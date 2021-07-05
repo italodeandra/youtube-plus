@@ -28,7 +28,7 @@
     "notistack": "^1.0.6-alpha.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-library": "github:italodeandra/react-library",
+    "@italodeandra/pijama": "1.0.0",
     "react-query": "^3.13.4",
     "valtio": "^1.0.1"
   },
