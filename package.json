@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prepare": "husky install",
     "dev": "next dev",
     "build": "npm run build:script && next build",
     "start": "next start -p $PORT",
     "test": "jest",
     "build:script": "craco build && copyfiles build/static/js/youtube-plus.js public -f",
-    "dev:script": "craco start",
-    "prepare": "husky install"
+    "dev:script": "craco start"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": "eslint --cache --fix",
@@ -20,15 +20,14 @@
     "@emotion/server": "^11.0.0",
     "@emotion/styled": "^11.1.5",
     "@fontsource/inter": "^4.2.2",
+    "@italodeandra/pijama": "1.0.0",
     "@material-ui/core": "^5.0.0-alpha.29",
     "axios": "^0.21.1",
     "cors": "^2.8.5",
     "mongoose": "^5.12.3",
     "next": "^10.1.2",
-    "notistack": "^1.0.6-alpha.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "@italodeandra/pijama": "1.0.0",
     "react-query": "^3.13.4",
     "valtio": "^1.0.1"
   },
