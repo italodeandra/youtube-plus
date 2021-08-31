@@ -1,4 +1,3 @@
-# build environment
 FROM node:14.17.1
 ARG GITHUB_TOKEN
 ARG REACT_APP_BASE_URL
