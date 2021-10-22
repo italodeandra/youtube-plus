@@ -23,12 +23,13 @@ import useCurrentProfileId from "../apiHooks/useCurrentProfileId"
 import Snackbar from "@italodeandra/pijama/components/Snackbar"
 import useListWatchedVideos from "../apiHooks/useListWatchedVideo"
 import useAddWatchedVideo from "../apiHooks/useAddWatchedVideo"
-import { useMemo, VFC } from "react"
+import { useMemo, VFC, useEffect } from "react"
 import useRemoveWatchedVideo from "../apiHooks/useRemoveWatchedVideo"
 import state from "../state"
 import { IWatchedVideoReqBody } from "../models/WatchedVideo"
 import Icon from "@iconify/react"
 import { useSnapshot } from "valtio"
+import { useToggle } from "react-use"
 
 const HomeWithProviders = () => {
   const snap = useSnapshot(state)
@@ -119,7 +120,18 @@ const HomeWithProviders = () => {
     isAddingOrRemovingWatchedVideo,
   ])
 
-  const isFullscreen = !!(window.screenTop && window.screenY)
+  const [isFullscreen, toggleIsFullScreen] = useToggle(
+    !!document.fullscreenElement
+  )
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      toggleIsFullScreen(!!document.fullscreenElement)
+    }
+    document.addEventListener("fullscreenchange", onFullscreenChange)
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange)
+    }
+  }, [toggleIsFullScreen])
 
   return (
     <>
