@@ -29,7 +29,6 @@ import state from "../state"
 import { IWatchedVideoReqBody } from "../models/WatchedVideo"
 import Icon from "@iconify/react"
 import { useSnapshot } from "valtio"
-import { useWindowSize } from "react-use"
 
 const HomeWithProviders = () => {
   const snap = useSnapshot(state)
@@ -120,8 +119,7 @@ const HomeWithProviders = () => {
     isAddingOrRemovingWatchedVideo,
   ])
 
-  const { height } = useWindowSize()
-  const isFullscreen = height === screen.height
+  const isFullscreen = !!(window.screenTop && window.screenY)
 
   return (
     <>
