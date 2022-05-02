@@ -20,7 +20,7 @@ const removeWatchedVideo: NextApiHandler = async (
     return res.status(400).send("Bad Request")
   }
 
-  await WatchedVideo.remove({
+  await WatchedVideo.deleteMany({
     userId: watchedVideoToRemove.userId,
     videoId: watchedVideoToRemove.videoId,
   })
