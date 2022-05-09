@@ -16,6 +16,18 @@ class YouTubeCrawler {
     )
   }
 
+  get mixes() {
+    return document.querySelectorAll<HTMLAnchorElement>(
+      "ytd-compact-radio-renderer"
+    )
+  }
+
+  get playlists() {
+    return document.querySelectorAll<HTMLAnchorElement>(
+      "ytd-compact-playlist-renderer"
+    )
+  }
+
   getId(element: HTMLAnchorElement) {
     const thumbnail = element.querySelector<HTMLAnchorElement>("a#thumbnail")
     return thumbnail?.href.match(config.youtubeRegex)?.[1]
@@ -78,6 +90,8 @@ async function runYouTubeCrawler(
           show,
           setStyleWatched,
           unsetStyleWatched,
+          mixes,
+          playlists,
         } = youTubeCrawler
 
         for (let i = 0; i < videos.length; i++) {
@@ -99,6 +113,24 @@ async function runYouTubeCrawler(
           }
         }
 
+        for (let i = 0; i < playlists.length; i++) {
+          const playlist = playlists[i]
+          if (state.isPlaylistsHidden) {
+            hide(playlist)
+          } else if (playlist) {
+            show(playlist)
+          }
+        }
+
+        for (let i = 0; i < mixes.length; i++) {
+          const mix = mixes[i]
+          if (state.isMixesHidden) {
+            hide(mix)
+          } else if (mix) {
+            show(mix)
+          }
+        }
+
         setCurrentVideoId(currentVideoId)
       } catch (err) {
         console.error(err)
@@ -111,7 +143,7 @@ async function runYouTubeCrawler(
   }
 }
 
-export default function useBet365Crawler(
+export default function useYouTubeCrawler(
   profileId?: string,
   watchedVideos?: string[]
 ) {

@@ -7,9 +7,13 @@ const stateFromStorage =
 
 const state = proxy<{
   isWatchedHidden: boolean
+  isPlaylistsHidden: boolean
+  isMixesHidden: boolean
   contextMenu: null | { mouseX: number; mouseY: number; videoId: string }
 }>({
   isWatchedHidden: false,
+  isPlaylistsHidden: false,
+  isMixesHidden: false,
   ...stateFromStorage,
   contextMenu: null,
 })

@@ -16,7 +16,7 @@ import eyeIcon from "@iconify/icons-heroicons-outline/eye"
 import eyeOffIcon from "@iconify/icons-heroicons-outline/eye-off"
 import checkIcon from "@iconify/icons-heroicons-outline/check"
 import xIcon from "@iconify/icons-heroicons-outline/x"
-import useBet365Crawler from "../useYouTubeCrawler"
+import useYouTubeCrawler from "../useYouTubeCrawler"
 import { QueryClientProvider } from "react-query"
 import queryClient from "../queryClient"
 import useCurrentProfileId from "../apiHooks/useCurrentProfileId"
@@ -51,7 +51,7 @@ const HomeWithProviders = () => {
     mutate: removeWatchedVideo,
     isLoading: isRemovingWatchedVideo,
   } = useRemoveWatchedVideo()
-  const [currentVideoId] = useBet365Crawler(currentProfileId, watchedVideos)
+  const [currentVideoId] = useYouTubeCrawler(currentProfileId, watchedVideos)
 
   const isLoading = isLoadingCurrentProfileId || isLoadingWatchedVideos
   const isAddingOrRemovingWatchedVideo =
@@ -109,10 +109,40 @@ const HomeWithProviders = () => {
         ),
         onClick: () => (state.isWatchedHidden = !snap.isWatchedHidden),
       })
+      innerActions.push({
+        key: 2,
+        icon: (
+          <SvgIcon>
+            <Icon icon={snap.isPlaylistsHidden ? eyeIcon : eyeOffIcon} />
+          </SvgIcon>
+        ),
+        tooltipTitle: (
+          <Typography noWrap fontSize={16}>
+            {snap.isPlaylistsHidden ? "Show" : "Hide"} playlists
+          </Typography>
+        ),
+        onClick: () => (state.isPlaylistsHidden = !snap.isPlaylistsHidden),
+      })
+      innerActions.push({
+        key: 3,
+        icon: (
+          <SvgIcon>
+            <Icon icon={snap.isMixesHidden ? eyeIcon : eyeOffIcon} />
+          </SvgIcon>
+        ),
+        tooltipTitle: (
+          <Typography noWrap fontSize={16}>
+            {snap.isMixesHidden ? "Show" : "Hide"} mixes
+          </Typography>
+        ),
+        onClick: () => (state.isMixesHidden = !snap.isMixesHidden),
+      })
     }
     return innerActions
   }, [
     snap.isWatchedHidden,
+    snap.isPlaylistsHidden,
+    snap.isMixesHidden,
     isLoading,
     isWatched,
     currentProfileId,
