@@ -1,4 +1,0 @@
-# list watched videos
-GET {{baseUrl}}/listWatchedVideos?userId=userId-1
-
-###
