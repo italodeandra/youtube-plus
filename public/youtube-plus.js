@@ -58,9 +58,9 @@ const cogIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 
 //   return null;
 // }
 
-// function removeElement(el) {
-//   el.parentNode.removeChild(el);
-// }
+function removeElement(el) {
+  el.parentNode.removeChild(el);
+}
 
 (async () => {
   loadCss(`
@@ -220,92 +220,115 @@ const cogIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 
     }
   });
 
-  let timer;
+  let lastMutation = Date.now();
 
   console.info("YouTube Plus is running...");
 
-  const observer = new MutationObserver(() => {
-    if (!timer) {
-      timer = setTimeout(async () => {
-        const videosElToCheck = Array.from(
-          document.querySelectorAll(
-            "ytd-rich-item-renderer:not([data-ytplus-checked])," +
-              "ytd-video-renderer:not([data-ytplus-checked])," +
-              "ytd-compact-video-renderer:not([data-ytplus-checked])," +
-              "ytd-notification-renderer:not([data-ytplus-checked])"
-          )
+  // noinspection InfiniteRecursionJS
+  async function loop() {
+    if (Date.now() - 1000 <= lastMutation) {
+      const videoElementsToCheckIfIsSameVideo = Array.from(
+        document.querySelectorAll(
+          "ytd-rich-item-renderer[data-ytplus-checked]," +
+            "ytd-video-renderer[data-ytplus-checked]," +
+            "ytd-compact-video-renderer[data-ytplus-checked]," +
+            "ytd-notification-renderer[data-ytplus-checked]"
+        )
+      );
+      for (const videoElement of videoElementsToCheckIfIsSameVideo) {
+        const videoId = getId(videoElement.querySelector("a").href);
+        if (videoId !== videoElement.getAttribute("data-ytplus-id")) {
+          videoElement.removeAttribute("data-ytplus-checked");
+          videoElement.removeAttribute("data-ytplus-id");
+          videoElement.removeAttribute("data-ytplus-watched");
+          const thumbnailEl = videoElement.querySelector("ytd-thumbnail");
+          if (thumbnailEl) {
+            removeElement(thumbnailEl.querySelector(".ytplus-video-actions"));
+          }
+        }
+      }
+
+      const videosElToCheck = Array.from(
+        document.querySelectorAll(
+          "ytd-rich-item-renderer:not([data-ytplus-checked])," +
+            "ytd-video-renderer:not([data-ytplus-checked])," +
+            "ytd-compact-video-renderer:not([data-ytplus-checked])," +
+            "ytd-notification-renderer:not([data-ytplus-checked])"
+        )
+      );
+      // console.log("videosElToCheck", videosElToCheck);
+      const videosToCheck = videosElToCheck
+        .map((el) => ({
+          el,
+          id: getId(el.querySelector("a").href),
+        }))
+        .filter((v) => v.id);
+
+      // console.log("videosToCheck", videosToCheck);
+
+      if (videosToCheck.length) {
+        const watchedVideos = await get(
+          "check",
+          `videosIds=${videosToCheck.map((v) => v.id).join(",")}`
         );
-        // console.log("videosElToCheck", videosElToCheck);
-        const videosToCheck = videosElToCheck
-          .map((el) => ({
-            el,
-            id: getId(el.querySelector("a").href),
-          }))
-          .filter((v) => v.id);
 
-        // console.log("videosToCheck", videosToCheck);
+        // console.log("watchedVideos", watchedVideos);
 
-        if (videosToCheck.length) {
-          const watchedVideos = await get(
-            "check",
-            `videosIds=${videosToCheck.map((v) => v.id).join(",")}`
-          );
-
-          // console.log("watchedVideos", watchedVideos);
-
-          for (const video of videosToCheck) {
-            let isWatched = watchedVideos.includes(video.id);
-            video.el.setAttribute("data-ytplus-checked", "true");
-            video.el.setAttribute("data-ytplus-id", video.id);
-            const thumbnailEl = video.el.querySelector("ytd-thumbnail");
-            if (thumbnailEl) {
-              thumbnailEl.insertAdjacentHTML(
-                "beforeend",
-                `
+        for (const video of videosToCheck) {
+          let isWatched = watchedVideos.includes(video.id);
+          video.el.setAttribute("data-ytplus-checked", "true");
+          video.el.setAttribute("data-ytplus-id", video.id);
+          const thumbnailEl = video.el.querySelector("ytd-thumbnail");
+          if (thumbnailEl) {
+            thumbnailEl.insertAdjacentHTML(
+              "beforeend",
+              `
                 <div class="ytplus-video-actions">
                   <button class="ytplus-button watched">
                     ${isWatched ? eyeSlashIcon : eyeIcon}
                   </button>  
                 </div>
               `
-              );
-              thumbnailEl
-                .querySelector(".watched")
-                .addEventListener("click", async () => {
-                  if (isWatched) {
-                    await post("remove", { videoId: video.id });
-                  } else {
-                    await post("add", { videoId: video.id });
-                  }
-                  isWatched = !isWatched;
+            );
+            thumbnailEl
+              .querySelector(".watched")
+              .addEventListener("click", async () => {
+                if (isWatched) {
+                  await post("remove", { videoId: video.id });
+                } else {
+                  await post("add", { videoId: video.id });
+                }
+                isWatched = !isWatched;
 
-                  for (const el of Array.from(
-                    document.querySelectorAll(`[data-ytplus-id="${video.id}"]`)
-                  )) {
-                    el.setAttribute("data-ytplus-watched", isWatched);
-                    el.querySelector(
-                      ".ytplus-video-actions .watched"
-                    ).innerHTML = isWatched ? eyeSlashIcon : eyeIcon;
-                  }
-                });
-            }
-
-            video.el.setAttribute("data-ytplus-watched", isWatched);
+                for (const el of Array.from(
+                  document.querySelectorAll(`[data-ytplus-id="${video.id}"]`)
+                )) {
+                  el.setAttribute("data-ytplus-watched", isWatched);
+                  el.querySelector(".ytplus-video-actions .watched").innerHTML =
+                    isWatched ? eyeSlashIcon : eyeIcon;
+                }
+              });
           }
-        }
 
-        const currentVideoMetadata = document.querySelector(
-          "ytd-watch-metadata:not([data-ytplus-checked])"
-        );
-        if (currentVideoMetadata) {
+          video.el.setAttribute("data-ytplus-watched", isWatched);
+        }
+      }
+
+      const currentVideoMetadata = document.querySelector("ytd-watch-metadata");
+      const menuEl = currentVideoMetadata?.querySelector("ytd-menu-renderer");
+      if (menuEl) {
+        const videoId = currentVideoMetadata.getAttribute("video-id");
+        if (
+          currentVideoMetadata.getAttribute("data-ytplus-checked") !== "true" ||
+          !menuEl.querySelector(".watched")
+        ) {
           currentVideoMetadata.setAttribute("data-ytplus-checked", "true");
-          const videoId = currentVideoMetadata.getAttribute("video-id");
+          currentVideoMetadata.setAttribute("data-ytplus-id", videoId);
 
           let isWatched = await get("check", `videosIds=${videoId}`).then(
             (watchedVideos) => watchedVideos.includes(videoId)
           );
 
-          const menuEl = document.querySelector("ytd-menu-renderer");
           menuEl.insertAdjacentHTML(
             "afterbegin",
             `
@@ -333,11 +356,26 @@ const cogIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 
             //     isWatched ? eyeSlashIcon : eyeIcon;
             // }
           });
+        } else if (
+          videoId !== currentVideoMetadata.getAttribute("data-ytplus-id")
+        ) {
+          const watchedButton = document.querySelector(
+            "ytd-menu-renderer .watched"
+          );
+          removeElement(watchedButton);
+          currentVideoMetadata.removeAttribute("data-ytplus-checked");
+          currentVideoMetadata.removeAttribute("data-ytplus-id");
         }
-
-        timer = null;
-      }, 1000);
+      }
     }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    void loop();
+  }
+
+  void loop();
+
+  const observer = new MutationObserver(async () => {
+    lastMutation = Date.now();
   });
 
   observer.observe(document.body, {
