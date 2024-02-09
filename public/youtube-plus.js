@@ -9,7 +9,7 @@
 // noinspection CssInvalidHtmlTagReference
 
 // const API_URL = "http://localhost:3000/api";
-const API_URL = "https://youtube-plus.italodeandra.de//api";
+const API_URL = "https://youtube-plus.italodeandra.de/api";
 
 // function loadScript(url) {
 //   return new Promise((resolve, reject) => {
