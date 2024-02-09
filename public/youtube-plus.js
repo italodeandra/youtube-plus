@@ -6,17 +6,21 @@
 // @version        latest
 // @grant          none
 // ==/UserScript==
+// noinspection CssInvalidHtmlTagReference
 
-function loadScript(url) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src = url;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.body.appendChild(script);
-  });
-}
+// const API_URL = "http://localhost:3000/api";
+const API_URL = "https://youtube-plus.italodeandra.de//api";
+
+// function loadScript(url) {
+//   return new Promise((resolve, reject) => {
+//     const script = document.createElement("script");
+//     script.type = "text/javascript";
+//     script.src = url;
+//     script.onload = resolve;
+//     script.onerror = reject;
+//     document.body.appendChild(script);
+//   });
+// }
 
 function loadCss(css) {
   const style = document.createElement("style");
@@ -43,20 +47,20 @@ const cogIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 
 </svg>
 `;
 
-function getClosestParent(element, query) {
-  let parent = element.parentElement;
-  while (parent) {
-    if (parent.matches(query)) {
-      return parent;
-    }
-    parent = parent.parentElement;
-  }
-  return null;
-}
+// function getClosestParent(element, query) {
+//   let parent = element.parentElement;
+//   while (parent) {
+//     if (parent.matches(query)) {
+//       return parent;
+//     }
+//     parent = parent.parentElement;
+//   }
+//   return null;
+// }
 
-function removeElement(el) {
-  el.parentNode.removeChild(el);
-}
+// function removeElement(el) {
+//   el.parentNode.removeChild(el);
+// }
 
 (async () => {
   loadCss(`
@@ -158,7 +162,7 @@ function removeElement(el) {
 
   async function get(path, queryString) {
     return fetch(
-      `http://localhost:3000/api/watched-video/${path}?userId=${userId}&${queryString}`,
+      `${API_URL}/watched-video/${path}?userId=${userId}&${queryString}`,
       {
         method: "GET",
         headers: {
@@ -169,7 +173,7 @@ function removeElement(el) {
   }
 
   async function post(path, body) {
-    return fetch(`http://localhost:3000/api/watched-video/${path}`, {
+    return fetch(`${API_URL}/watched-video/${path}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -231,7 +235,7 @@ function removeElement(el) {
               "ytd-notification-renderer:not([data-ytplus-checked])"
           )
         );
-        console.log("videosElToCheck", videosElToCheck);
+        // console.log("videosElToCheck", videosElToCheck);
         const videosToCheck = videosElToCheck
           .map((el) => ({
             el,
@@ -239,7 +243,7 @@ function removeElement(el) {
           }))
           .filter((v) => v.id);
 
-        console.log("videosToCheck", videosToCheck);
+        // console.log("videosToCheck", videosToCheck);
 
         if (videosToCheck.length) {
           const watchedVideos = await get(
@@ -247,7 +251,7 @@ function removeElement(el) {
             `videosIds=${videosToCheck.map((v) => v.id).join(",")}`
           );
 
-          console.log("watchedVideos", watchedVideos);
+          // console.log("watchedVideos", watchedVideos);
 
           for (const video of videosToCheck) {
             let isWatched = watchedVideos.includes(video.id);
