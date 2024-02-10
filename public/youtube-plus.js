@@ -71,7 +71,7 @@ function removeElement(el) {
     [data-ytplus-watched=true]:hover {
       opacity: 1;
     }
-    [data-ytplus-hide-watched=true] [data-ytplus-watched=true]:not(ytd-notification-renderer) {
+    [data-ytplus-hide-watched=true] [data-ytplus-watched=true]:not(ytd-notification-renderer):not(ytd-playlist-video-renderer) {
       display: none;
     }
     
@@ -85,6 +85,9 @@ function removeElement(el) {
       border-radius: 5px;
       padding: 10px;
       font-size: 16px;
+    }
+    .no-scroll #ytplus {
+      display: none;
     }
     #ytplus .icon {
       line-height: 0;
@@ -105,6 +108,7 @@ function removeElement(el) {
       left: 5px;
       opacity: 0;
       transition: opacity 200ms;
+      z-index: 1000;
     }
     .ytplus-video-actions.visible {
       opacity: 1;
@@ -137,20 +141,6 @@ function removeElement(el) {
       margin-right: 10px;
       width: 40px;
     }
-    
-    // [data-ytplus-watched=true] .ytplus-video-actions button svg.eye {
-    //   display: none;
-    // }
-    // [data-ytplus-watched=true] .ytplus-video-actions button svg.eye-slash {
-    //   display: block;
-    // }
-    //
-    // [data-ytplus-watched=false] .ytplus-video-actions button svg.eye {
-    //   display: block;
-    // }
-    // [data-ytplus-watched=false] .ytplus-video-actions button svg.eye-slash {
-    //   display: none;
-    // }
   `);
 
   const userId = await fetch("https://www.youtube.com/profile").then((res) => {
@@ -232,7 +222,8 @@ function removeElement(el) {
           "ytd-rich-item-renderer[data-ytplus-checked]," +
             "ytd-video-renderer[data-ytplus-checked]," +
             "ytd-compact-video-renderer[data-ytplus-checked]," +
-            "ytd-notification-renderer[data-ytplus-checked]"
+            "ytd-notification-renderer[data-ytplus-checked]," +
+            "ytd-playlist-video-renderer[data-ytplus-checked]"
         )
       );
       for (const videoElement of videoElementsToCheckIfIsSameVideo) {
@@ -253,7 +244,8 @@ function removeElement(el) {
           "ytd-rich-item-renderer:not([data-ytplus-checked])," +
             "ytd-video-renderer:not([data-ytplus-checked])," +
             "ytd-compact-video-renderer:not([data-ytplus-checked])," +
-            "ytd-notification-renderer:not([data-ytplus-checked])"
+            "ytd-notification-renderer:not([data-ytplus-checked])," +
+            "ytd-playlist-video-renderer:not([data-ytplus-checked])"
         )
       );
       // console.log("videosElToCheck", videosElToCheck);
@@ -284,14 +276,14 @@ function removeElement(el) {
               "beforeend",
               `
                 <div class="ytplus-video-actions">
-                  <button class="ytplus-button watched">
+                  <button class="ytplus-button ytplus-watched">
                     ${isWatched ? eyeSlashIcon : eyeIcon}
                   </button>  
                 </div>
               `
             );
             thumbnailEl
-              .querySelector(".watched")
+              .querySelector(".ytplus-watched")
               .addEventListener("click", async () => {
                 if (isWatched) {
                   await post("remove", { videoId: video.id });
@@ -304,8 +296,9 @@ function removeElement(el) {
                   document.querySelectorAll(`[data-ytplus-id="${video.id}"]`)
                 )) {
                   el.setAttribute("data-ytplus-watched", isWatched);
-                  el.querySelector(".ytplus-video-actions .watched").innerHTML =
-                    isWatched ? eyeSlashIcon : eyeIcon;
+                  el.querySelector(".ytplus-watched").innerHTML = isWatched
+                    ? eyeSlashIcon
+                    : eyeIcon;
                 }
               });
           }
@@ -320,7 +313,7 @@ function removeElement(el) {
         const videoId = currentVideoMetadata.getAttribute("video-id");
         if (
           currentVideoMetadata.getAttribute("data-ytplus-checked") !== "true" ||
-          !menuEl.querySelector(".watched")
+          !menuEl.querySelector(".ytplus-watched")
         ) {
           currentVideoMetadata.setAttribute("data-ytplus-checked", "true");
           currentVideoMetadata.setAttribute("data-ytplus-id", videoId);
@@ -332,12 +325,12 @@ function removeElement(el) {
           menuEl.insertAdjacentHTML(
             "afterbegin",
             `
-              <button class="ytplus-button watched">
+              <button class="ytplus-button ytplus-watched">
                 ${isWatched ? eyeSlashIcon : eyeIcon}
               </button>  
             `
           );
-          const watchedButton = menuEl.querySelector(".watched");
+          const watchedButton = menuEl.querySelector(".ytplus-watched");
           watchedButton.addEventListener("click", async () => {
             if (isWatched) {
               await post("remove", { videoId: videoId });
@@ -348,23 +341,72 @@ function removeElement(el) {
 
             watchedButton.innerHTML = isWatched ? eyeSlashIcon : eyeIcon;
 
-            // for (const el of Array.from(
-            //   document.querySelectorAll(`[data-ytplus-id="${videoId}"]`)
-            // )) {
-            //   el.setAttribute("data-ytplus-watched", isWatched);
-            //   el.querySelector(".ytplus-video-actions .watched").innerHTML =
-            //     isWatched ? eyeSlashIcon : eyeIcon;
-            // }
+            for (const el of Array.from(
+              document.querySelectorAll(
+                `[data-ytplus-id="${videoId}"] .ytplus-watched`
+              )
+            )) {
+              el.innerHTML = isWatched ? eyeSlashIcon : eyeIcon;
+            }
           });
         } else if (
           videoId !== currentVideoMetadata.getAttribute("data-ytplus-id")
         ) {
-          const watchedButton = document.querySelector(
-            "ytd-menu-renderer .watched"
-          );
+          const watchedButton = menuEl.querySelector(".ytplus-watched");
           removeElement(watchedButton);
           currentVideoMetadata.removeAttribute("data-ytplus-checked");
           currentVideoMetadata.removeAttribute("data-ytplus-id");
+        }
+      }
+
+      const shortsMenuEl = document.querySelector(
+        "ytd-reel-player-overlay-renderer #actions"
+      );
+      if (shortsMenuEl) {
+        const videoId = getId(window.location.href);
+        if (
+          shortsMenuEl.getAttribute("data-ytplus-checked") !== "true" ||
+          !shortsMenuEl.querySelector(".ytplus-watched")
+        ) {
+          shortsMenuEl.setAttribute("data-ytplus-checked", "true");
+          shortsMenuEl.setAttribute("data-ytplus-id", videoId);
+
+          let isWatched = await get("check", `videosIds=${videoId}`).then(
+            (watchedVideos) => watchedVideos.includes(videoId)
+          );
+
+          shortsMenuEl.insertAdjacentHTML(
+            "afterbegin",
+            `
+              <button class="ytplus-button ytplus-watched">
+                ${isWatched ? eyeSlashIcon : eyeIcon}
+              </button>  
+            `
+          );
+          const watchedButton = shortsMenuEl.querySelector(".ytplus-watched");
+          watchedButton.addEventListener("click", async () => {
+            if (isWatched) {
+              await post("remove", { videoId: videoId });
+            } else {
+              await post("add", { videoId: videoId });
+            }
+            isWatched = !isWatched;
+
+            watchedButton.innerHTML = isWatched ? eyeSlashIcon : eyeIcon;
+
+            for (const el of Array.from(
+              document.querySelectorAll(
+                `[data-ytplus-id="${videoId}"] .ytplus-watched`
+              )
+            )) {
+              el.innerHTML = isWatched ? eyeSlashIcon : eyeIcon;
+            }
+          });
+        } else if (videoId !== shortsMenuEl.getAttribute("data-ytplus-id")) {
+          const watchedButton = shortsMenuEl.querySelector(".ytplus-watched");
+          removeElement(watchedButton);
+          shortsMenuEl.removeAttribute("data-ytplus-checked");
+          shortsMenuEl.removeAttribute("data-ytplus-id");
         }
       }
     }
