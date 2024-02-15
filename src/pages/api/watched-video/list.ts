@@ -11,17 +11,19 @@ async function handler(args: { userId: string }) {
     throw badRequest;
   }
 
-  return WatchedVideo.find(
-    {
-      userId: args.userId,
-    },
-    {
-      projection: {
-        _id: 0,
-        videoId: 1,
+  return (
+    await WatchedVideo.find(
+      {
+        userId: args.userId,
       },
-    }
-  );
+      {
+        projection: {
+          _id: 0,
+          videoId: 1,
+        },
+      }
+    )
+  ).map((v) => v.videoId);
 }
 
 export default apiHandlerWrapper(handler);

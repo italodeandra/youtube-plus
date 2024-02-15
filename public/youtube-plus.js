@@ -8,14 +8,14 @@
 // ==/UserScript==
 // noinspection CssInvalidHtmlTagReference
 
-// const API_URL = "http://localhost:3000/api";
-const API_URL = "https://youtube-plus.italodeandra.de/api";
+const API_URL = "http://localhost:3000/api";
+// const API_URL = "https://youtube-plus.italodeandra.de/api";
 
 // region utility functions
-function loadCss(css) {
-  const style = document.createElement("style");
-  style.textContent = css;
-  document.head.appendChild(style);
+const style = document.createElement("style");
+document.head.appendChild(style);
+function appendCss(css) {
+  style.textContent += css;
 }
 
 function wait(ms) {
@@ -28,13 +28,13 @@ function getId(href) {
   )?.[1];
 }
 
-function removeElement(el) {
-  try {
-    el.parentNode?.removeChild(el);
-  } catch (e) {
-    // already removed
-  }
-}
+// function removeElement(el) {
+//   try {
+//     el.parentNode?.removeChild(el);
+//   } catch (e) {
+//     // already removed
+//   }
+// }
 
 // endregion
 
@@ -63,11 +63,11 @@ function removeElement(el) {
 // endregion
 
 // region icons
-const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="eye-icon">
   <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
   <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
 </svg>`;
-const eyeSlashIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+const eyeSlashIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="eye-slash-icon">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
 </svg>`;
 const cogIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -75,6 +75,7 @@ const cogIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 
   <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
 </svg>
 `;
+const loadingIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="4" cy="12" r="3" fill="currentColor"><animate id="svgSpinners3DotsFade0" fill="freeze" attributeName="opacity" begin="0;svgSpinners3DotsFade1.end-0.375s" dur="1.125s" values="1;0.2"/></circle><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.4"><animate fill="freeze" attributeName="opacity" begin="svgSpinners3DotsFade0.begin+0.225s" dur="1.125s" values="1;0.2"/></circle><circle cx="20" cy="12" r="3" fill="currentColor" opacity="0.3"><animate id="svgSpinners3DotsFade1" fill="freeze" attributeName="opacity" begin="svgSpinners3DotsFade0.begin+0.45s" dur="1.125s" values="1;0.2"/></circle></svg>`;
 
 // endregion
 
@@ -116,88 +117,88 @@ function createRequestFunctions(userId) {
 }
 
 (async () => {
-  loadCss(`
-    [data-ytplus-watched=true] {
-      opacity: 0.3;
-      transition: opacity 200ms;
-    }
-    [data-ytplus-watched=true]:hover {
-      opacity: 1;
-    }
-    [data-ytplus-hide-watched=true] [data-ytplus-watched=true]:not(ytd-notification-renderer):not(ytd-playlist-video-renderer):not(ytd-playlist-panel-video-renderer) {
-      display: none;
-    }
-    
-    [data-ytplus-hide-watched=true] ytd-compact-radio-renderer {
-      display: none;
-    }
-    
-    #ytplus {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      z-index: 1000;
-      background: #000;
-      color: #fff;
-      border-radius: 5px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    .no-scroll #ytplus {
-      display: none;
-    }
-    #ytplus .icon {
-      line-height: 0;
-    }
-    #ytplus:hover svg {
-      display: none;
-    }
-    #ytplus .settings {
-      display: none;
-    }
-    #ytplus:hover .settings {
-      display: block;
-    }
-    
-    .ytplus-video-actions {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      opacity: 0;
-      transition: opacity 200ms;
-      z-index: 1000;
-    }
-    .ytplus-video-actions.visible {
-      opacity: 1;
-    }
-    
-    [data-ytplus-checked]:hover .ytplus-video-actions {
-      opacity: 1;
-    }
-    
-    .ytplus-button {
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid transparent;
-      transition: border 200ms;
-      color: #fff;
-      border-radius: 5px;
-      padding: 5px;
-      line-height: 0;
-    }
-    .ytplus-button:hover {
-      border-color: rgba(0, 0, 0, 0.7);
-    }
-    
-    .ytplus-button svg,
-    #ytplus .icon svg {
-      width: 20px;
-      height: 20px;
-    }
-    
-    ytd-menu-renderer .ytplus-button {
-      margin-right: 10px;
-      width: 40px;
-    }
+  appendCss(`
+    // [data-ytplus-watched=true] {
+    //   opacity: 0.3;
+    //   transition: opacity 200ms;
+    // }
+    // [data-ytplus-watched=true]:hover {
+    //   opacity: 1;
+    // }
+    // [data-ytplus-hide-watched=true] [data-ytplus-watched=true]:not(ytd-notification-renderer):not(ytd-playlist-video-renderer):not(ytd-playlist-panel-video-renderer) {
+    //   display: none;
+    // }
+    //
+    // [data-ytplus-hide-watched=true] ytd-compact-radio-renderer {
+    //   display: none;
+    // }
+    //
+    // #ytplus {
+    //   position: fixed;
+    //   bottom: 10px;
+    //   right: 10px;
+    //   z-index: 1000;
+    //   background: #000;
+    //   color: #fff;
+    //   border-radius: 5px;
+    //   padding: 10px;
+    //   font-size: 16px;
+    // }
+    // .no-scroll #ytplus {
+    //   display: none;
+    // }
+    // #ytplus .icon {
+    //   line-height: 0;
+    // }
+    // #ytplus:hover svg {
+    //   display: none;
+    // }
+    // #ytplus .settings {
+    //   display: none;
+    // }
+    // #ytplus:hover .settings {
+    //   display: block;
+    // }
+    //
+    // .ytplus-video-actions {
+    //   position: absolute;
+    //   top: 5px;
+    //   left: 5px;
+    //   opacity: 0;
+    //   transition: opacity 200ms;
+    //   z-index: 1000;
+    // }
+    // .ytplus-video-actions.visible {
+    //   opacity: 1;
+    // }
+    //
+    // [data-ytplus-checked]:hover .ytplus-video-actions {
+    //   opacity: 1;
+    // }
+    //
+    // .ytplus-button {
+    //   background: rgba(0, 0, 0, 0.5);
+    //   border: 1px solid transparent;
+    //   transition: border 200ms;
+    //   color: #fff;
+    //   border-radius: 5px;
+    //   padding: 5px;
+    //   line-height: 0;
+    // }
+    // .ytplus-button:hover {
+    //   border-color: rgba(0, 0, 0, 0.7);
+    // }
+    //
+    // .ytplus-button svg,
+    // #ytplus .icon svg {
+    //   width: 20px;
+    //   height: 20px;
+    // }
+    //
+    // ytd-menu-renderer .ytplus-button {
+    //   margin-right: 10px;
+    //   width: 40px;
+    // }
   `);
 
   const userId = await getUserId();
@@ -209,23 +210,95 @@ function createRequestFunctions(userId) {
     document.body.setAttribute("data-ytplus-hide-watched", "true");
   }
 
+  appendCss(`
+    #ytplus {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: #09090b;
+      color: #fff;
+      border-radius: 5px;
+      padding: 5px;
+      font-size: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    .no-scroll #ytplus {
+      display: none;
+    }
+    
+    .ytplus-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+    .ytplus-icon {
+      line-height: 0;
+    }
+    
+    .ytplus-button {
+      background: #18181b;
+      border: 1px solid transparent;
+      transition: border 200ms;
+      color: #fff;
+      border-radius: 5px;
+      padding: 5px;
+    }
+    .ytplus-button:hover {
+      border-color: #27272a;
+    }
+    .ytplus-button:active {
+      border-color: #3f3f46;
+    }
+    
+    #ytplus-settings {
+      display: none;
+    }
+    #ytplus:hover #ytplus-settings {
+      display: block;
+    }
+    
+    #ytplus-settings-icon {
+      display: block;
+      margin: 4px;
+    }
+    #ytplus:hover #ytplus-settings-icon {
+      display: none;
+    }
+    
+    #ytplus-loading-icon {
+      display: none;
+      margin: 4px;
+    }
+    [data-ytplus-loading] #ytplus-loading-icon {
+      display: block;
+    }
+    [data-ytplus-loading] #ytplus-settings-icon {
+      display: none;
+    }
+  `);
   document.body.insertAdjacentHTML(
     "beforeend",
     `
       <div id="ytplus">
-        <div class="icon">
+        <div id="ytplus-settings-icon" class="ytplus-icon">
           ${cogIcon}
         </div>
+        <div id="ytplus-loading-icon" class="ytplus-icon">
+          ${loadingIcon}
+        </div>
         
-        <div class="settings">
-          <button class="ytplus-button toggle-hide">${
-            hideWatched ? "Show watched" : "Hide watched"
-          }</button>
+        <div id="ytplus-settings">
+          <button id="ytplus-toggle-hide" class="ytplus-button">
+            ${hideWatched ? "Show watched" : "Hide watched"}
+          </button>
         </div>
       </div>
     `
   );
-  const toggleHideButton = document.body.querySelector("#ytplus .toggle-hide");
+  const toggleHideButton = document.body.querySelector("#ytplus-toggle-hide");
   toggleHideButton.addEventListener("click", () => {
     const hideWatched = document.body.getAttribute("data-ytplus-hide-watched");
     if (hideWatched) {
@@ -241,10 +314,161 @@ function createRequestFunctions(userId) {
 
   console.info("YouTube Plus is running...");
 
+  let watched = [];
+  async function updateWatched() {
+    document.body.setAttribute("data-ytplus-loading", "true");
+    watched = await get("list");
+    document.body.removeAttribute("data-ytplus-loading");
+  }
+  window.addEventListener("focus", updateWatched);
+  updateWatched();
+
+  appendCss(`
+    .eye-slash-icon,
+    [data-ytplus-watched] .eye-icon {
+      display: none;
+    }
+    
+    .eye-icon,
+    [data-ytplus-watched] .eye-slash-icon {
+      display: block;
+    }
+    
+    ytd-menu-renderer #ytplus-watched-button {
+      margin: auto 10px;
+    }
+    
+    .ytplus-video-actions {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      opacity: 0;
+      transition: opacity 200ms;
+      z-index: 1000000;
+    }
+    
+    ytd-thumbnail:hover .ytplus-video-actions,
+    .ytplus-video-actions:hover {
+      opacity: 1;
+    }
+    
+    [data-ytplus-watched=true]:not(ytd-menu-renderer) {
+      opacity: 0.3;
+      transition: opacity 200ms;
+    }
+    [data-ytplus-watched=true]:hover {
+      opacity: 1;
+    }
+    [data-ytplus-hide-watched=true] [data-ytplus-watched=true]:not(ytd-notification-renderer):not(ytd-playlist-video-renderer):not(ytd-playlist-panel-video-renderer):not(ytd-menu-renderer) {
+      display: none !important;
+    }
+
+    [data-ytplus-hide-watched=true] ytd-compact-radio-renderer {
+      display: none;
+    }
+  `);
+
   // noinspection InfiniteRecursionJS
   async function loop() {
     try {
-      const videoElementsToCheckIfIsSameVideo = Array.from(
+      const currentVideoMetadata = document.querySelector("ytd-watch-metadata");
+      const menuEl = currentVideoMetadata?.querySelector("ytd-menu-renderer");
+      if (menuEl) {
+        const videoId = currentVideoMetadata.getAttribute("video-id");
+        let isWatched = watched.includes(videoId);
+        if (isWatched) {
+          menuEl.setAttribute("data-ytplus-watched", "true");
+        } else {
+          menuEl.removeAttribute("data-ytplus-watched");
+        }
+        if (!menuEl.querySelector("#ytplus-watched-button")) {
+          menuEl.insertAdjacentHTML(
+            "afterbegin",
+            `
+              <button id="ytplus-watched-button" class="ytplus-button ytplus-icon">
+                ${eyeSlashIcon}
+                ${eyeIcon}
+              </button>  
+            `
+          );
+          const menuWatchButton = menuEl.querySelector(
+            "#ytplus-watched-button"
+          );
+          menuWatchButton.addEventListener("click", async () => {
+            let isWatched =
+              menuEl.getAttribute("data-ytplus-watched") === "true";
+            document.body.setAttribute("data-ytplus-loading", "true");
+            if (!isWatched) {
+              watched.push(videoId);
+              menuEl.setAttribute("data-ytplus-watched", "true");
+              await post("add", { videoId });
+            } else {
+              watched = watched.filter((v) => v !== videoId);
+              menuEl.removeAttribute("data-ytplus-watched");
+              await post("remove", { videoId });
+            }
+            document.body.removeAttribute("data-ytplus-loading");
+          });
+        }
+      }
+
+      const videosEls = Array.from(
+        document.querySelectorAll(
+          "ytd-rich-item-renderer," +
+            "ytd-video-renderer," +
+            "ytd-compact-video-renderer," +
+            "ytd-notification-renderer," +
+            "ytd-playlist-video-renderer," +
+            "ytd-playlist-panel-video-renderer," +
+            "ytd-reel-item-renderer"
+        )
+      );
+
+      for (const videoEl of videosEls) {
+        const videoId = getId(videoEl.querySelector("a").href);
+        let isWatched = watched.includes(videoId);
+        if (isWatched) {
+          videoEl.setAttribute("data-ytplus-watched", "true");
+        } else {
+          videoEl.removeAttribute("data-ytplus-watched");
+        }
+        if (!videoEl.querySelector(".ytplus-video-actions")) {
+          const thumbnailEl = videoEl.querySelector("ytd-thumbnail");
+          if (thumbnailEl) {
+            thumbnailEl.insertAdjacentHTML(
+              "beforeend",
+              `
+                <div class="ytplus-video-actions">
+                  <button class="ytplus-button ytplus-icon">
+                    ${eyeSlashIcon}
+                    ${eyeIcon}
+                  </button>  
+                </div>
+              `
+            );
+            const videoWatchButton = thumbnailEl.querySelector(
+              ".ytplus-video-actions .ytplus-button"
+            );
+            videoWatchButton.addEventListener("click", async () => {
+              let isWatched =
+                videoEl.getAttribute("data-ytplus-watched") === "true";
+              document.body.setAttribute("data-ytplus-loading", "true");
+              if (!isWatched) {
+                watched.push(videoId);
+                videoEl.setAttribute("data-ytplus-watched", "true");
+                await post("add", { videoId });
+              } else {
+                watched = watched.filter((v) => v !== videoId);
+                videoEl.removeAttribute("data-ytplus-watched");
+                await post("remove", { videoId });
+              }
+              document.body.removeAttribute("data-ytplus-loading");
+            });
+          }
+        }
+      }
+
+      /*const videoElementsToCheckIfIsSameVideo = Array.from(
         document.querySelectorAll(
           "ytd-rich-item-renderer[data-ytplus-checked]," +
             "ytd-video-renderer[data-ytplus-checked]," +
@@ -438,8 +662,8 @@ function createRequestFunctions(userId) {
           shortsMenuEl.removeAttribute("data-ytplus-checked");
           shortsMenuEl.removeAttribute("data-ytplus-id");
         }
-      }
-      await wait(200);
+      }*/
+      await wait(1000);
     } catch (e) {
       console.error(e);
       await wait(5000);
