@@ -352,14 +352,14 @@ function createRequestFunctions(userId) {
       opacity: 1;
     }
     
-    [data-ytplus-watched=true]:not(ytd-menu-renderer) {
+    [data-ytplus-watched=true]:not(ytd-menu-renderer):not(#actions) {
       opacity: 0.3;
       transition: opacity 200ms;
     }
     [data-ytplus-watched=true]:hover {
       opacity: 1;
     }
-    [data-ytplus-hide-watched=true] [data-ytplus-watched=true]:not(ytd-notification-renderer):not(ytd-playlist-video-renderer):not(ytd-playlist-panel-video-renderer):not(ytd-menu-renderer) {
+    [data-ytplus-hide-watched=true] [data-ytplus-watched=true]:not(ytd-notification-renderer):not(ytd-playlist-video-renderer):not(ytd-playlist-panel-video-renderer):not(ytd-menu-renderer):not(#actions) {
       display: none !important;
     }
 
@@ -374,7 +374,7 @@ function createRequestFunctions(userId) {
       const currentVideoMetadata = document.querySelector("ytd-watch-metadata");
       const menuEl = currentVideoMetadata?.querySelector("ytd-menu-renderer");
       if (menuEl) {
-        const videoId = currentVideoMetadata.getAttribute("video-id");
+        const videoId = getId(window.location.href);
         let isWatched = watched.includes(videoId);
         if (isWatched) {
           menuEl.setAttribute("data-ytplus-watched", "true");
@@ -395,7 +395,8 @@ function createRequestFunctions(userId) {
             "#ytplus-watched-button"
           );
           menuWatchButton.addEventListener("click", async () => {
-            let isWatched =
+            const videoId = getId(window.location.href);
+            const isWatched =
               menuEl.getAttribute("data-ytplus-watched") === "true";
             document.body.setAttribute("data-ytplus-loading", "true");
             if (!isWatched) {
@@ -405,6 +406,49 @@ function createRequestFunctions(userId) {
             } else {
               watched = watched.filter((v) => v !== videoId);
               menuEl.removeAttribute("data-ytplus-watched");
+              await post("remove", { videoId });
+            }
+            document.body.removeAttribute("data-ytplus-loading");
+          });
+        }
+      }
+
+      const shortsMenuEls = document.querySelectorAll(
+        "ytd-reel-player-overlay-renderer #actions"
+      );
+      for (const shortsMenuEl of shortsMenuEls) {
+        const videoId = getId(window.location.href);
+        const isWatched = watched.includes(videoId);
+        if (isWatched) {
+          shortsMenuEl.setAttribute("data-ytplus-watched", "true");
+        } else {
+          shortsMenuEl.removeAttribute("data-ytplus-watched");
+        }
+        if (!shortsMenuEl.querySelector("#ytplus-watched-button")) {
+          shortsMenuEl.insertAdjacentHTML(
+            "afterbegin",
+            `
+              <button id="ytplus-watched-button" class="ytplus-button ytplus-icon">
+                ${eyeSlashIcon}
+                ${eyeIcon}
+              </button>  
+            `
+          );
+          const shortsWatchButton = shortsMenuEl.querySelector(
+            "#ytplus-watched-button"
+          );
+          shortsWatchButton.addEventListener("click", async () => {
+            const videoId = getId(window.location.href);
+            const isWatched =
+              shortsMenuEl.getAttribute("data-ytplus-watched") === "true";
+            document.body.setAttribute("data-ytplus-loading", "true");
+            if (!isWatched) {
+              watched.push(videoId);
+              shortsMenuEl.setAttribute("data-ytplus-watched", "true");
+              await post("add", { videoId });
+            } else {
+              watched = watched.filter((v) => v !== videoId);
+              shortsMenuEl.removeAttribute("data-ytplus-watched");
               await post("remove", { videoId });
             }
             document.body.removeAttribute("data-ytplus-loading");
@@ -426,7 +470,7 @@ function createRequestFunctions(userId) {
 
       for (const videoEl of videosEls) {
         const videoId = getId(videoEl.querySelector("a").href);
-        let isWatched = watched.includes(videoId);
+        const isWatched = watched.includes(videoId);
         if (isWatched) {
           videoEl.setAttribute("data-ytplus-watched", "true");
         } else {
@@ -450,7 +494,8 @@ function createRequestFunctions(userId) {
               ".ytplus-video-actions .ytplus-button"
             );
             videoWatchButton.addEventListener("click", async () => {
-              let isWatched =
+              const videoId = getId(videoEl.querySelector("a").href);
+              const isWatched =
                 videoEl.getAttribute("data-ytplus-watched") === "true";
               document.body.setAttribute("data-ytplus-loading", "true");
               if (!isWatched) {
