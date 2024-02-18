@@ -464,7 +464,8 @@ function createRequestFunctions(userId) {
             "ytd-notification-renderer," +
             "ytd-playlist-video-renderer," +
             "ytd-playlist-panel-video-renderer," +
-            "ytd-reel-item-renderer"
+            "ytd-reel-item-renderer," +
+            "ytd-grid-video-renderer"
         )
       );
 
