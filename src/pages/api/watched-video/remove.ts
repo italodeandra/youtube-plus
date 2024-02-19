@@ -11,7 +11,7 @@ async function handler(args: { videoId: string; userId: string }) {
     throw badRequest;
   }
 
-  await WatchedVideo.deleteOne({
+  await WatchedVideo.deleteMany({
     userId: args.userId,
     videoId: args.videoId,
   });
