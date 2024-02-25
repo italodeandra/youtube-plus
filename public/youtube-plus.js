@@ -8,8 +8,8 @@
 // ==/UserScript==
 // noinspection CssInvalidHtmlTagReference
 
-const API_URL = "http://localhost:3000/api";
-// const API_URL = "https://youtube-plus.italodeandra.de/api";
+// const API_URL = "http://localhost:3000/api";
+const API_URL = "https://youtube-plus.italodeandra.de/api";
 
 // region utility functions
 const style = document.createElement("style");
