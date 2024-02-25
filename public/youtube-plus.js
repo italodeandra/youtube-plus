@@ -8,8 +8,8 @@
 // ==/UserScript==
 // noinspection CssInvalidHtmlTagReference
 
-// const API_URL = "http://localhost:3000/api";
-const API_URL = "https://youtube-plus.italodeandra.de/api";
+const API_URL = "http://localhost:3000/api";
+// const API_URL = "https://youtube-plus.italodeandra.de/api";
 
 // region utility functions
 const style = document.createElement("style");
@@ -316,15 +316,20 @@ function createRequestFunctions(userId) {
   console.info("YouTube Plus is running...");
 
   let watched = [];
+  let watchedId = 0;
 
   async function updateWatched() {
+    let id = ++watchedId;
     document.body.setAttribute("data-ytplus-loading", "true");
-    watched = await get("list");
-    document.body.removeAttribute("data-ytplus-loading");
+    let data = await get("list");
+    if (id === watchedId) {
+      watched = data;
+      document.body.removeAttribute("data-ytplus-loading");
+    }
   }
 
   window.addEventListener("focus", updateWatched);
-  updateWatched();
+  void updateWatched();
 
   appendCss(`
     .eye-slash-icon,
@@ -411,6 +416,7 @@ function createRequestFunctions(userId) {
               menuEl.removeAttribute("data-ytplus-watched");
               await post("remove", { videoId });
             }
+            await updateWatched();
             document.body.removeAttribute("data-ytplus-loading");
           });
         }
@@ -454,6 +460,7 @@ function createRequestFunctions(userId) {
               shortsMenuEl.removeAttribute("data-ytplus-watched");
               await post("remove", { videoId });
             }
+            await updateWatched();
             document.body.removeAttribute("data-ytplus-loading");
           });
         }
@@ -513,6 +520,7 @@ function createRequestFunctions(userId) {
                 videoEl.removeAttribute("data-ytplus-watched");
                 await post("remove", { videoId });
               }
+              await updateWatched();
               document.body.removeAttribute("data-ytplus-loading");
             });
           }
@@ -561,6 +569,7 @@ function createRequestFunctions(userId) {
               videoEl.removeAttribute("data-ytplus-watched");
               await post("remove", { videoId });
             }
+            await updateWatched();
             document.body.removeAttribute("data-ytplus-loading");
           });
         }
