@@ -1,7 +1,8 @@
-/** @type {import("next").NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  swcMinify: true,
+import nextConfig from "@italodeandra/next/next.config";
+import { merge } from "lodash-es";
+import { NextConfig } from "next";
+
+const config: NextConfig = {
   async headers() {
     return [
       {
@@ -24,4 +25,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default merge(nextConfig, config);

@@ -1,2 +1,1 @@
-/// <reference types="node" />
-export default function uploadToImgur(image: Buffer | string): Promise<string>;
+export default function uploadToImgur(image: Buffer | string, clientId?: string | undefined): Promise<string>;

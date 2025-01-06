@@ -416,7 +416,6 @@ function createRequestFunctions(userId) {
               menuEl.removeAttribute("data-ytplus-watched");
               await post("remove", { videoId });
             }
-            await updateWatched();
             document.body.removeAttribute("data-ytplus-loading");
           });
         }
@@ -460,7 +459,6 @@ function createRequestFunctions(userId) {
               shortsMenuEl.removeAttribute("data-ytplus-watched");
               await post("remove", { videoId });
             }
-            await updateWatched();
             document.body.removeAttribute("data-ytplus-loading");
           });
         }
@@ -520,7 +518,6 @@ function createRequestFunctions(userId) {
                 videoEl.removeAttribute("data-ytplus-watched");
                 await post("remove", { videoId });
               }
-              await updateWatched();
               document.body.removeAttribute("data-ytplus-loading");
             });
           }
@@ -569,7 +566,6 @@ function createRequestFunctions(userId) {
               videoEl.removeAttribute("data-ytplus-watched");
               await post("remove", { videoId });
             }
-            await updateWatched();
             document.body.removeAttribute("data-ytplus-loading");
           });
         }
