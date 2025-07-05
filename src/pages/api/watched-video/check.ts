@@ -1,5 +1,5 @@
-import { apiHandlerWrapper } from "@italodeandra/next/api/apiHandlerWrapper";
-import { badRequest } from "@italodeandra/next/api/errors";
+import { apiHandlerWrapper } from "@majapisoftwares/next/api/apiHandlerWrapper";
+import { badRequest } from "@majapisoftwares/next/api/errors";
 import getWatchedVideo from "../../../collections/WatchedVideo";
 import connectDb from "../../../db/db";
 

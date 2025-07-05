@@ -1,5 +1,5 @@
-import db from "@italodeandra/next/db";
-import { onlyServer } from "@italodeandra/next/utils/isServer";
+import db from "@majapisoftwares/next/db";
+import { onlyServer } from "@majapisoftwares/next/utils/isServer";
 import { schema, types } from "papr";
 
 const watchedVideoSchema = onlyServer(() =>

@@ -1,4 +1,4 @@
-import papr from "@italodeandra/next/db";
+import papr from "@majapisoftwares/next/db";
 import getWatchedVideo from "../collections/WatchedVideo";
 
 export default async function migration() {
