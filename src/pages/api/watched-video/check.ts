@@ -1,29 +1,41 @@
-import { apiHandlerWrapper } from "@majapisoftwares/next/api/apiHandlerWrapper";
-import { badRequest } from "@majapisoftwares/next/api/errors";
-import getWatchedVideo from "../../../collections/WatchedVideo";
+import type { NextApiRequest, NextApiResponse } from "next";
+import getWatchedVideoModel from "../../../collections/WatchedVideo";
 import connectDb from "../../../db/db";
+import { badRequest, readCsv, readString, withApi } from "../../../lib/api";
 
-async function handler(args: { userId: string; videosIds: string }) {
-  await connectDb();
-  const WatchedVideo = getWatchedVideo();
+async function handler(req: NextApiRequest, res: NextApiResponse<string[]>) {
+  const userId = readString(req.query.userId);
+  const videoIds = readCsv(
+    typeof req.query.videoIds !== "undefined"
+      ? req.query.videoIds
+      : req.query.videosIds,
+  );
 
-  if (!args.userId) {
-    throw badRequest;
+  if (!userId) {
+    throw badRequest("userId is required.");
   }
 
-  return (
-    await WatchedVideo.find(
-      {
-        userId: args.userId,
-        videoId: { $in: args.videosIds.split(",") },
-      },
-      {
-        projection: {
-          videoId: 1,
-        },
-      }
-    )
-  ).map((v) => v.videoId);
+  if (videoIds.length === 0) {
+    res.status(200).json([]);
+    return;
+  }
+
+  await connectDb();
+  const WatchedVideo = getWatchedVideoModel();
+  const watchedVideos = await WatchedVideo.find(
+    {
+      userId,
+      videoId: { $in: videoIds },
+    },
+  )
+    .select({
+      _id: 0,
+      videoId: 1,
+    })
+    .lean()
+    .exec();
+
+  res.status(200).json(watchedVideos.map((video) => video.videoId));
 }
 
-export default apiHandlerWrapper(handler);
+export default withApi(["GET"], handler);

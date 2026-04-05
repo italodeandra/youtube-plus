@@ -1,31 +1,37 @@
-import { apiHandlerWrapper } from "@majapisoftwares/next/api/apiHandlerWrapper";
-import { badRequest } from "@majapisoftwares/next/api/errors";
-import getWatchedVideo from "../../../collections/WatchedVideo";
+import type { NextApiRequest, NextApiResponse } from "next";
+import getWatchedVideoModel from "../../../collections/WatchedVideo";
 import connectDb from "../../../db/db";
+import { badRequest, readString, withApi } from "../../../lib/api";
 
-async function handler(args: { videoId: string; userId: string }) {
-  await connectDb();
-  const WatchedVideo = getWatchedVideo();
+async function handler(req: NextApiRequest, res: NextApiResponse<void>) {
+  const userId = readString(req.body?.userId);
+  const videoId = readString(req.body?.videoId);
 
-  if (!args.userId || !args.videoId) {
-    throw badRequest;
+  if (!userId || !videoId) {
+    throw badRequest("userId and videoId are required.");
   }
+
+  await connectDb();
+  const WatchedVideo = getWatchedVideoModel();
 
   await WatchedVideo.findOneAndUpdate(
     {
-      userId: args.userId,
-      videoId: args.videoId,
+      userId,
+      videoId,
     },
     {
-      $setOnInsert: {
-        userId: args.userId,
-        videoId: args.videoId,
+      $set: {
+        userId,
+        videoId,
       },
     },
     {
       upsert: true,
-    }
+      new: true,
+    },
   );
+
+  res.status(204).end();
 }
 
-export default apiHandlerWrapper(handler);
+export default withApi(["POST"], handler);

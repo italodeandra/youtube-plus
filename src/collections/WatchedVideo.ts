@@ -1,22 +1,44 @@
-import db from "@majapisoftwares/next/db";
-import { onlyServer } from "@majapisoftwares/next/utils/isServer";
-import { schema, types } from "papr";
+import { model, models, type Model, Schema } from "mongoose";
 
-const watchedVideoSchema = onlyServer(() =>
-  schema(
-    {
-      videoId: types.string({ required: true }),
-      userId: types.string({ required: true }),
+export interface IWatchedVideo {
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  videoId: string;
+}
+
+const watchedVideoSchema = new Schema<IWatchedVideo>(
+  {
+    videoId: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    {
-      timestamps: true,
-    }
-  )
+    userId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+  },
 );
 
-const getWatchedVideo = () =>
-  onlyServer(() => db.model("watchedvideos", watchedVideoSchema));
+watchedVideoSchema.index(
+  {
+    userId: 1,
+    videoId: 1,
+  },
+  {
+    unique: true,
+  },
+);
 
-export type IWatchedVideo = (typeof watchedVideoSchema)[0];
-
-export default getWatchedVideo;
+export default function getWatchedVideoModel(): Model<IWatchedVideo> {
+  return (
+    (models.WatchedVideo as Model<IWatchedVideo> | undefined) ??
+    model<IWatchedVideo>("WatchedVideo", watchedVideoSchema, "watchedvideos")
+  );
+}

@@ -1,39 +1,30 @@
-<img src="hero.svg" alt="YouTube">
-<br />
-<br />
+# YouTube Plus
 
-<code>youtube-plus.js</code> improves YouTube's tracking of watched videos
+YouTube Plus is a Chrome extension backed by a Next.js API that keeps a synced list of watched videos.
 
-![GitHub branch checks state](https://img.shields.io/github/checks-status/italodeandra/youtube-plus/main?style=flat&colorA=000000)
-[![Version](https://img.shields.io/github/package-json/v/italodeandra/youtube-plus?style=flat&colorA=000000&colorB=000000)](https://github.com/italodeandra/youtube-plus/releases)
+## Features
 
-#### You can
-
-- Mark video as watched
+- Mark videos as watched
 - Hide watched videos
-- Cloud sync your list
+- Sync watched state across devices
 
-[Wiki](https://github.com/italodeandra/youtube-plus/wiki)
+## Local development
 
-#### Start using it
+1. Install dependencies with `npm install`.
+2. Create `.env.local` from `.env.example`.
+3. Start the API with `npm run dev`.
+4. Load the [`extension/`](extension) directory as an unpacked extension in Chrome.
 
-Add the following script to any browser UserScript extension.
+## Local API override
+
+The extension defaults to the hosted API. To point a YouTube tab at a local backend, run this in the browser console:
 
 ```js
-// ==UserScript==
-// @name           YouTube Plus
-// @description    Improve YouTube's tracking of watched videos
-// @author         Ítalo Andrade
-// @include        *www.youtube.com/*
-// @version        latest
-// ==/UserScript==
-
-;(async () => {
-  const youtubePlus = await fetch(
-    "https://youtube-plus.italodeandra.de/youtube-plus.js"
-  ).then((res) => res.text())
-  eval(youtubePlus)
-})()
+localStorage.setItem("ytplus-api-url", "http://localhost:3000/api");
 ```
 
-You don't need to manually update on future releases.
+To switch the tab back to the hosted API:
+
+```js
+localStorage.removeItem("ytplus-api-url");
+```
