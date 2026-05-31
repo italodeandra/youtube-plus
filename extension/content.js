@@ -27,7 +27,14 @@ const THUMBNAIL_SELECTOR = [
 ].join(",");
 
 const WATCH_MENU_SELECTOR = "ytd-watch-metadata ytd-menu-renderer";
-const SHORTS_MENU_SELECTOR = "ytd-reel-player-overlay-renderer #actions";
+const SHORTS_MENU_SELECTOR = [
+  "ytd-shorts ytd-reel-player-overlay-renderer:not([has-player-overlay]) #actions",
+  "ytd-shorts ytd-reel-player-overlay-renderer[has-player-overlay] reel-action-bar-view-model",
+  "ytd-shorts ytd-reel-video-renderer .action-container > #actions",
+  "ytd-shorts ytd-reel-video-renderer reel-action-bar-view-model",
+  "ytd-reel-player-overlay-renderer #actions",
+].join(",");
+const NOTIFICATION_RENDERER_SELECTOR = "ytd-notification-renderer";
 
 const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="eye-icon">
   <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -64,17 +71,49 @@ function getApiUrl() {
 }
 
 function getId(href) {
-  return href?.match(
+  if (!href) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(href, window.location.origin);
+    const pathVideoId =
+      url.hostname === "youtu.be"
+        ? url.pathname.split("/").find(Boolean)
+        : url.pathname.match(/\/(?:v|e(?:mbed)?|shorts)\/([^/?#&]+)/)?.[1];
+    const videoId = url.searchParams.get("v") ?? pathVideoId;
+
+    if (/^[\w-]{11}$/.test(videoId ?? "")) {
+      return videoId;
+    }
+  } catch {
+    // Fall back to the looser matcher below for unusual href values.
+  }
+
+  return href.match(
     /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/,
   )?.[1];
 }
 
 function getVideoIdFromElement(videoElement) {
-  return getId(
-    videoElement.querySelector("a[href]")?.href ??
-      videoElement.getAttribute("href") ??
-      videoElement.href,
-  );
+  const hrefs = [
+    videoElement.href,
+    videoElement.getAttribute("href"),
+    ...[...videoElement.querySelectorAll("a[href]")].flatMap((link) => [
+      link.href,
+      link.getAttribute("href"),
+    ]),
+  ];
+
+  for (const href of hrefs) {
+    const videoId = getId(href);
+
+    if (videoId) {
+      return videoId;
+    }
+  }
+
+  return undefined;
 }
 
 function getCurrentVideoId() {
@@ -281,6 +320,63 @@ function waitForBody() {
       margin: auto 10px;
     }
 
+    ytd-shorts :is(#actions, reel-action-bar-view-model) > .ytplus-watched-button,
+    ytd-reel-player-overlay-renderer #actions > .ytplus-watched-button,
+    reel-action-bar-view-model > .ytplus-watched-button {
+      display: flex;
+      width: 48px;
+      height: 48px;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      margin: 0 auto 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    ytd-notification-renderer {
+      position: relative;
+    }
+
+    .ytplus-notification-button {
+      position: absolute;
+      top: 50%;
+      right: 52px;
+      z-index: 1000000;
+      display: flex;
+      width: 32px;
+      height: 32px;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 5px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(15, 15, 15, 0.92);
+      color: #fff;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(-50%);
+      transition:
+        background 200ms,
+        opacity 200ms;
+    }
+
+    .ytplus-notification-button:hover,
+    .ytplus-notification-button:focus-visible,
+    ytd-notification-renderer:hover .ytplus-notification-button {
+      opacity: 1;
+    }
+
+    .ytplus-notification-button:hover {
+      background: rgba(39, 39, 42, 0.96);
+    }
+
+    .ytplus-notification-button svg {
+      width: 20px;
+      height: 20px;
+    }
+
     .ytplus-video-actions {
       position: absolute;
       top: 5px;
@@ -297,7 +393,7 @@ function waitForBody() {
       opacity: 1;
     }
 
-    [data-ytplus-watched=true]:not(ytd-menu-renderer):not(#actions) {
+    [data-ytplus-watched=true]:not(ytd-menu-renderer):not(#actions):not(reel-action-bar-view-model) {
       opacity: 0.3;
       transition: opacity 200ms;
     }
@@ -306,7 +402,7 @@ function waitForBody() {
       opacity: 1;
     }
 
-    [data-ytplus-hide-watched=true] [data-ytplus-watched=true]:not(ytd-notification-renderer):not(ytd-playlist-video-renderer):not(ytd-playlist-panel-video-renderer):not(ytd-menu-renderer):not(#actions) {
+    [data-ytplus-hide-watched=true] [data-ytplus-watched=true]:not(ytd-notification-renderer):not(ytd-playlist-video-renderer):not(ytd-playlist-panel-video-renderer):not(ytd-menu-renderer):not(#actions):not(reel-action-bar-view-model) {
       display: none !important;
     }
 
@@ -451,6 +547,10 @@ function waitForBody() {
         }
 
         setElementWatchedState(videoElement, isWatched);
+
+        if (videoElement.matches(NOTIFICATION_RENDERER_SELECTOR)) {
+          syncNotificationActionButton(videoElement, videoId);
+        }
       }
     }
 
@@ -462,7 +562,10 @@ function waitForBody() {
   function ensureVideoActionButton(videoElement) {
     const thumbnailElement = videoElement.querySelector(THUMBNAIL_SELECTOR);
 
-    if (!thumbnailElement || thumbnailElement.querySelector(".ytplus-video-actions")) {
+    if (
+      !thumbnailElement ||
+      thumbnailElement.querySelector(".ytplus-video-actions")
+    ) {
       return;
     }
 
@@ -483,13 +586,65 @@ function waitForBody() {
       event.stopPropagation();
       event.preventDefault();
 
-      const videoId = elementVideoIds.get(videoElement) ?? getVideoIdFromElement(videoElement);
+      const videoId =
+        elementVideoIds.get(videoElement) ??
+        getVideoIdFromElement(videoElement);
       if (!videoId) {
         return;
       }
 
       await toggleWatchedState(videoId);
     });
+  }
+
+  function ensureNotificationActionButton(notificationElement) {
+    if (
+      !notificationElement.matches(NOTIFICATION_RENDERER_SELECTOR) ||
+      notificationElement.querySelector(".ytplus-notification-button")
+    ) {
+      return;
+    }
+
+    notificationElement.insertAdjacentHTML(
+      "beforeend",
+      `
+        <button type="button" class="ytplus-notification-button" title="Toggle watched">
+          ${eyeSlashIcon}
+          ${eyeIcon}
+        </button>
+      `,
+    );
+
+    const button = notificationElement.querySelector(
+      ".ytplus-notification-button",
+    );
+    button.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+
+      const videoId =
+        elementVideoIds.get(notificationElement) ??
+        getVideoIdFromElement(notificationElement);
+      if (!videoId) {
+        return;
+      }
+
+      await toggleWatchedState(videoId);
+    });
+  }
+
+  function syncNotificationActionButton(notificationElement, videoId) {
+    const button = notificationElement.querySelector(
+      ".ytplus-notification-button",
+    );
+
+    if (!button) {
+      return;
+    }
+
+    button.title = isVideoWatched(videoId)
+      ? "Mark as unwatched"
+      : "Mark as watched";
   }
 
   function ensureWatchButton(container, getVideoId) {
@@ -521,6 +676,18 @@ function waitForBody() {
     });
   }
 
+  function getShortsMenuContainers() {
+    const containers = [...document.querySelectorAll(SHORTS_MENU_SELECTOR)];
+
+    return containers.filter(
+      (container) =>
+        !containers.some(
+          (otherContainer) =>
+            otherContainer !== container && container.contains(otherContainer),
+        ),
+    );
+  }
+
   function syncCurrentVideoState() {
     const currentVideoId = getCurrentVideoId();
     const watchMenu = document.querySelector(WATCH_MENU_SELECTOR);
@@ -529,7 +696,7 @@ function waitForBody() {
       setElementWatchedState(watchMenu, isVideoWatched(currentVideoId));
     }
 
-    for (const shortsMenu of document.querySelectorAll(SHORTS_MENU_SELECTOR)) {
+    for (const shortsMenu of getShortsMenuContainers()) {
       setElementWatchedState(shortsMenu, isVideoWatched(currentVideoId));
     }
   }
@@ -561,7 +728,13 @@ function waitForBody() {
       elementVideoIds.set(videoElement, nextVideoId);
     }
 
-    ensureVideoActionButton(videoElement);
+    if (videoElement.matches(NOTIFICATION_RENDERER_SELECTOR)) {
+      ensureNotificationActionButton(videoElement);
+      syncNotificationActionButton(videoElement, nextVideoId);
+    } else {
+      ensureVideoActionButton(videoElement);
+    }
+
     setElementWatchedState(videoElement, isVideoWatched(nextVideoId));
 
     if (visibleElementIds.has(videoElement)) {
@@ -695,7 +868,7 @@ function waitForBody() {
       setElementWatchedState(watchMenu, isVideoWatched(currentVideoId));
     }
 
-    for (const shortsMenu of document.querySelectorAll(SHORTS_MENU_SELECTOR)) {
+    for (const shortsMenu of getShortsMenuContainers()) {
       ensureWatchButton(shortsMenu, getCurrentVideoId);
       setElementWatchedState(shortsMenu, isVideoWatched(currentVideoId));
     }
@@ -719,7 +892,9 @@ function waitForBody() {
     handleRouteChange();
     syncWatchMenus();
 
-    for (const videoElement of document.querySelectorAll(VIDEO_RENDERER_SELECTOR)) {
+    for (const videoElement of document.querySelectorAll(
+      VIDEO_RENDERER_SELECTOR,
+    )) {
       if (!observedVideoElements.has(videoElement)) {
         observedVideoElements.add(videoElement);
         intersectionObserver.observe(videoElement);
