@@ -8,6 +8,15 @@ YouTube Plus is a Chrome extension backed by a Next.js API that keeps a synced l
 - Hide watched videos
 - Sync watched state across devices
 
+## How to use in production
+
+1. Clone or download this repository.
+2. Open Chrome (or any Chromium browser) and go to `chrome://extensions/`.
+3. Enable **Developer mode** via the toggle in the top right.
+4. Click **Load unpacked** and select the [`extension/`](extension) folder.
+
+The extension automatically connects to the hosted production API by default (`https://youtube-plus.italodeandra.de/api`).
+
 ## Local development
 
 1. Install dependencies with `npm install`.
