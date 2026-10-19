@@ -33,6 +33,8 @@ const SHORTS_MENU_SELECTOR = [
   "ytd-shorts ytd-reel-video-renderer .action-container > #actions",
   "ytd-shorts ytd-reel-video-renderer reel-action-bar-view-model",
   "ytd-reel-player-overlay-renderer #actions",
+  "ytd-shorts #actions",
+  "#shorts-player #actions",
 ].join(",");
 const NOTIFICATION_RENDERER_SELECTOR = "ytd-notification-renderer";
 
@@ -382,15 +384,8 @@ function waitForBody() {
       top: 5px;
       left: 5px;
       z-index: 1000000;
-      opacity: 0;
-      transition: opacity 200ms;
-    }
-
-    ytd-thumbnail:hover .ytplus-video-actions,
-    yt-thumbnail-view-model:hover .ytplus-video-actions,
-    .shortsLockupViewModelHostThumbnailContainer:hover .ytplus-video-actions,
-    .ytplus-video-actions:hover {
       opacity: 1;
+      transition: opacity 200ms;
     }
 
     [data-ytplus-watched=true]:not(ytd-menu-renderer):not(#actions):not(reel-action-bar-view-model) {
@@ -560,13 +555,15 @@ function waitForBody() {
   }
 
   function ensureVideoActionButton(videoElement) {
-    const thumbnailElement = videoElement.querySelector(THUMBNAIL_SELECTOR);
+    const thumbnailElement =
+      videoElement.querySelector(THUMBNAIL_SELECTOR) || videoElement;
 
-    if (
-      !thumbnailElement ||
-      thumbnailElement.querySelector(".ytplus-video-actions")
-    ) {
+    if (thumbnailElement.querySelector(".ytplus-video-actions")) {
       return;
+    }
+
+    if (getComputedStyle(thumbnailElement).position === "static") {
+      thumbnailElement.style.position = "relative";
     }
 
     thumbnailElement.insertAdjacentHTML(
