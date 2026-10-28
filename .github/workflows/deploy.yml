@@ -25,4 +25,6 @@ jobs:
     uses: majapisoftwares/ci/.github/workflows/deploy.yml@v2
     with:
       deploy_production: ${{ inputs.deploy_production || false }}
-    secrets: inherit
+    # Reusable workflows from another owner receive no inherited secrets.
+    secrets:
+      HOSTED_ENV: ${{ secrets.YOUTUBE_PLUS_HOSTED_ENV }}
