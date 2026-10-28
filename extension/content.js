@@ -3,6 +3,9 @@
 const DEFAULT_API_URL = "https://youtube-plus.italodeandra.de/api";
 const CHECK_BATCH_SIZE = 75;
 const CHECK_DEBOUNCE_MS = 150;
+// After failed checks, wait 1s, 2s, 4s… up to 5 minutes before trying again.
+const CHECK_RETRY_BASE_MS = 1000;
+const CHECK_RETRY_MAX_MS = 5 * 60 * 1000;
 const SCAN_IDLE_TIMEOUT_MS = 500;
 const VIEWPORT_MARGIN_PX = 300;
 
@@ -227,6 +230,7 @@ function waitForBody() {
   let activeMutationRequests = 0;
   let checkInFlight = false;
   let checkTimer = null;
+  let checkFailures = 0;
   let currentUrl = window.location.href;
   let pageScanScheduled = false;
 
@@ -754,10 +758,18 @@ function waitForBody() {
       return;
     }
 
-    checkTimer = window.setTimeout(() => {
-      checkTimer = null;
-      void flushPendingChecks();
-    }, CHECK_DEBOUNCE_MS);
+    checkTimer = window.setTimeout(
+      () => {
+        checkTimer = null;
+        void flushPendingChecks();
+      },
+      checkFailures
+        ? Math.min(
+            CHECK_RETRY_BASE_MS * 2 ** (checkFailures - 1),
+            CHECK_RETRY_MAX_MS,
+          )
+        : CHECK_DEBOUNCE_MS,
+    );
   }
 
   function queueWatchedStateCheck(videoIds, options = {}) {
@@ -812,8 +824,10 @@ function waitForBody() {
           applyWatchedStateToVideo(videoId, watchedIds.has(videoId));
         }
       }
+      checkFailures = 0;
     } catch (error) {
       console.error(error);
+      checkFailures += 1;
 
       for (const videoId of requestedIds) {
         pendingCheckIds.add(videoId);
