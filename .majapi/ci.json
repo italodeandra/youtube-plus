@@ -1,0 +1,7 @@
+{
+  "hosted": {
+    "app": "youtube-plus",
+    "domain": "youtube-plus.italodeandra.de",
+    "envSecret": "YOUTUBE_PLUS_HOSTED_ENV"
+  }
+}
