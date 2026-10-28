@@ -1,0 +1,28 @@
+name: Majapi CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+    inputs:
+      deploy_production:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  deploy:
+    uses: majapisoftwares/ci/.github/workflows/deploy.yml@v2
+    with:
+      deploy_production: ${{ inputs.deploy_production || false }}
+    secrets: inherit
