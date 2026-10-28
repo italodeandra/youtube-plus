@@ -384,8 +384,14 @@ function waitForBody() {
       top: 5px;
       left: 5px;
       z-index: 1000000;
-      opacity: 1;
+      opacity: 0;
       transition: opacity 200ms;
+    }
+
+    :hover > .ytplus-video-actions,
+    .ytplus-video-actions:hover,
+    .ytplus-video-actions:focus-within {
+      opacity: 1;
     }
 
     [data-ytplus-watched=true]:not(ytd-menu-renderer):not(#actions):not(reel-action-bar-view-model) {
